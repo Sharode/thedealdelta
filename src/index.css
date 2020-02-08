@@ -3,3 +3,8 @@
 @tailwind components;
 
 @tailwind utilities;
+
+
+.min-h-24 {
+  min-height: 24rem;
+}
