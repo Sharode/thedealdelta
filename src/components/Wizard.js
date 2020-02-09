@@ -1,6 +1,5 @@
 import React from 'react';
-import { Formik, Field, ErrorMessage } from 'formik';
-import { FormikDebug } from './FormikDebug';
+import { Formik } from 'formik';
 
 class Wizard extends React.Component {
   static Page = ({ children }) => children;
