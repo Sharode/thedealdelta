@@ -1,62 +1,67 @@
 import React, { useState } from 'react';
 import { Formik } from 'formik';
 import { hot } from 'react-hot-loader'
-import { getAmortizedPrincipleAndInterest } from "./functions"
+import { getAmortizedPrincipleAndInterest, validation } from "./functions"
 import { FormSection } from "./components/FormSection"
 import { FIELDS } from "./constants"
 
 const onSubmit = (values, actions) => {
-  const principleAndInterest = getAmortizedPrincipleAndInterest(values.financing.Amount, values.financing.InterestRate, values.financing.TermYears)
+  const newVal = validation(values, FIELDS)
 
-  const monthlyMortgagePayment = 
-    principleAndInterest 
-    + values.financing.MortgageInsurance
-    + values.expenses.HomeInsurance 
-    + values.expenses.PropertyTaxes
-    + values.expenses.HOA
-  
+  const principleAndInterest = getAmortizedPrincipleAndInterest(newVal.financing.Amount, newVal.financing.InterestRate, newVal.financing.TermYears)
+
+  const monthlyMortgagePayment =
+    principleAndInterest
+    + newVal.financing.MortgageInsurance
+    + newVal.expenses.HomeInsurance
+    + newVal.expenses.PropertyTaxes
+    + newVal.expenses.HOA
+
   // DO NOT DOUBLE COUNT insurance, taxes hoa
-  const additionalMonthlyExpenses = 
-    values.expenses.Vacancy
-    + values.expenses.CapEx
-    + values.expenses.Maintenance
-    + values.expenses.Management
-    + values.expenses.Electricity
-    + values.expenses.WaterSewer
-    + values.expenses.Trash
+  const additionalMonthlyExpenses =
+    newVal.expenses.Vacancy
+    + newVal.expenses.CapEx
+    + newVal.expenses.Maintenance
+    + newVal.expenses.Management
+    + newVal.expenses.Electricity
+    + newVal.expenses.WaterSewer
+    + newVal.expenses.Trash
 
-  let monthlyIncome = 
-    values.income.Amount 
-    + values.income.Other
-  
-  let monthlyExpenses = monthlyMortgagePayment 
+  let monthlyIncome =
+    newVal.income.Amount
+    + newVal.income.Other
+
+  let monthlyExpenses = monthlyMortgagePayment
     + additionalMonthlyExpenses
 
   let monthlyCashflow = monthlyIncome - monthlyExpenses
 
   let totalOperatingExpenses =
-    values.expenses.Vacancy
-    + values.expenses.CapEx
-    + values.expenses.Maintenance
-    + values.expenses.Management
-    + values.expenses.Electricity
-    + values.expenses.WaterSewer
-    + values.expenses.Trash
-    + values.expenses.HomeInsurance 
-    + values.expenses.PropertyTaxes
-    + values.expenses.HOA
+    newVal.expenses.Vacancy
+    + newVal.expenses.CapEx
+    + newVal.expenses.Maintenance
+    + newVal.expenses.Management
+    + newVal.expenses.Electricity
+    + newVal.expenses.WaterSewer
+    + newVal.expenses.Trash
+    + newVal.expenses.HomeInsurance
+    + newVal.expenses.PropertyTaxes
+    + newVal.expenses.HOA
 
-  const downPaymentAmount = values.financing.PurchasePrice * (values.financing.DownPaymentRate / 100)
+  const downPaymentAmount = newVal.financing.PurchasePrice * (newVal.financing.DownPaymentRate / 100)
 
-  const totalCashNeeded = 
-    downPaymentAmount 
-    + values.repairs.Amount 
-    + values.financing.ClosingCosts
+  const totalCashNeeded =
+    downPaymentAmount
+    + newVal.repairs.Amount
+    + newVal.financing.ClosingCosts
 
-  const annualCashOnCashReturn = (monthlyCashflow * 12 / totalCashNeeded) * 100
+  const annualCashOnCashReturn = (monthlyCashflow * 12 / totalCashNeeded)
+
 
   actions.setSubmitting(false);
-  
+
+  console.log()
+
   return {
     monthlyIncome,
     monthlyExpenses,
@@ -135,11 +140,11 @@ const App = () => {
             setState(results)
 
           }}
+        >
+          {({ values, handleSubmit, isSubmitting, handleReset, handleChange, setFieldValue }) => {
 
-          render={({ values, handleSubmit, isSubmitting, handleReset, handleChange, setFieldValue }) => {            
-            
             return (
-              <form 
+              <form
                 onSubmit={handleSubmit}
                 className=""
               >
@@ -150,7 +155,7 @@ const App = () => {
                   />
 
                   <FormSection
-                    name="Financing" 
+                    name="Financing"
                     fields={FIELDS.financing}
                   />
 
@@ -171,9 +176,9 @@ const App = () => {
 
                   <div className="md:flex md:items-center md:justify-end mt-4">
                     <div className="">
-                      <button 
-                        type="submit" 
-                        disabled={isSubmitting} 
+                      <button
+                        type="submit"
+                        disabled={isSubmitting}
                         className="shadow bg-purple-500 hover:bg-purple-400 focus:shadow-outline focus:outline-none text-white font-bold py-2 px-4 rounded"
                       >
                         Submit
@@ -183,7 +188,7 @@ const App = () => {
                 </div>
               </form>
             )
-          }}>
+          }}
         </Formik>
 
         <div className="my-8 bg-white shadow-md rounded">
@@ -191,64 +196,64 @@ const App = () => {
             results
           </div>
           <div className="px-16 py-12">
-              <div className="md:flex md:items-center mb-6">
-                <div className="md:w-1/3">
-                  <div className="block text-gray-500 font-bold md:text-right mb-1 md:mb-0 pr-4">
-                    Monthly expenses
+            <div className="md:flex md:items-center mb-6">
+              <div className="md:w-1/3">
+                <div className="block text-gray-500 font-bold md:text-right mb-1 md:mb-0 pr-4">
+                  Monthly expenses
                   </div>
-                </div>
-                <div className="md:w-2/3">
-                  ${state.monthlyExpenses.toFixed(2)}
-                </div>
               </div>
-
-              <div className="md:flex md:items-center mb-6">
-                <div className="md:w-1/3">
-                  <div className="block text-gray-500 font-bold md:text-right mb-1 md:mb-0 pr-4">
-                    Monthly income
-                  </div>
-                </div>
-                <div className="md:w-2/3">
-                  ${state.monthlyIncome.toFixed(2)}
-                </div>
+              <div className="md:w-2/3">
+                ${state.monthlyExpenses.toFixed(2)}
               </div>
+            </div>
 
-
-              <div className="md:flex md:items-center mb-6">
-                <div className="md:w-1/3">
-                  <div className="block text-gray-500 font-bold md:text-right mb-1 md:mb-0 pr-4">
-                    Monthly cashflow
+            <div className="md:flex md:items-center mb-6">
+              <div className="md:w-1/3">
+                <div className="block text-gray-500 font-bold md:text-right mb-1 md:mb-0 pr-4">
+                  Monthly income
                   </div>
-                </div>
-                <div className="md:w-2/3">
-                  ${state.monthlyCashflow.toFixed(2)}
-                </div>
               </div>
-
-              <div className="md:flex md:items-center mb-6">
-                <div className="md:w-1/3">
-                  <div className="block text-gray-500 font-bold md:text-right mb-1 md:mb-0 pr-4">
-                    Cash on Cash return
-                  </div>
-                </div>
-                <div className="md:w-2/3">
-                  {state.annualCashOnCashReturn.toFixed(2)}
-                </div>
+              <div className="md:w-2/3">
+                ${state.monthlyIncome.toFixed(2)}
               </div>
+            </div>
 
-              <div className="md:flex md:items-center mb-6">
-                <div className="md:w-1/3">
-                  <div className="block text-gray-500 font-bold md:text-right mb-1 md:mb-0 pr-4">
-                    Cash needed
+
+            <div className="md:flex md:items-center mb-6">
+              <div className="md:w-1/3">
+                <div className="block text-gray-500 font-bold md:text-right mb-1 md:mb-0 pr-4">
+                  Monthly cashflow
                   </div>
-                </div>
-                <div className="md:w-2/3">
-                  ${state.totalCashNeeded.toFixed(2)}
-                </div>
+              </div>
+              <div className="md:w-2/3">
+                ${state.monthlyCashflow.toFixed(2)}
+              </div>
+            </div>
+
+            <div className="md:flex md:items-center mb-6">
+              <div className="md:w-1/3">
+                <div className="block text-gray-500 font-bold md:text-right mb-1 md:mb-0 pr-4">
+                  Cash on Cash return
+                  </div>
+              </div>
+              <div className="md:w-2/3">
+                {state.annualCashOnCashReturn.toFixed(2)}%
+              </div>
+            </div>
+
+            <div className="md:flex md:items-center mb-6">
+              <div className="md:w-1/3">
+                <div className="block text-gray-500 font-bold md:text-right mb-1 md:mb-0 pr-4">
+                  Cash needed
+                  </div>
+              </div>
+              <div className="md:w-2/3">
+                ${state.totalCashNeeded.toFixed(2)}
               </div>
             </div>
           </div>
         </div>
+      </div>
 
     </div>
   );
